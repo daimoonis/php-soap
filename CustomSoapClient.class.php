@@ -19,23 +19,23 @@ class CustomSoapClient extends SoapClient {
 
 		if ($this->bSecuritySoap) {
 
-			//pokud se jedna o security soap request, pridame do xml requestu patricne security prvky
-			$dom = new DomDocument('1.0', 'UTF-8');
-			$dom->preserveWhiteSpace = false;
-			$dom->loadXML($request);
-			$secureXml = new WSSESoap($dom);
+			//pokud se jedna o security soap request, pridame do xml requestu patricne security prvky, napriklad:
+			//$dom = new DomDocument('1.0', 'UTF-8');
+			//$dom->preserveWhiteSpace = false;
+			/$dom->loadXML($request);
+			//$secureXml = new WSSESoap($dom);
 
-			if ($this->iMessageExpireAfter)
-				$secureXml->addTimestamp($this->iMessageExpireAfter);
-			else
-				$secureXml->addTimestamp();
+			//if ($this->iMessageExpireAfter)
+			//	$secureXml->addTimestamp($this->iMessageExpireAfter);
+			//else
+			//	$secureXml->addTimestamp();
 
 			//podepsani
 			//$secureXml->signAllHeaders = true;
-			$secureXml->signSoapDoc();
-			$secureXml->addX509KeyInfo();
+			//$secureXml->signSoapDoc();
+			//$secureXml->addX509KeyInfo();
 
-			$request = $secureXml->saveXML();
+			//$request = $secureXml->saveXML();
 		}
 
 		return parent::__doRequest($request, $location, $action, $version);
