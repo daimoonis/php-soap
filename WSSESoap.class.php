@@ -1,3 +1,9 @@
+namespace Daimoonis;
+
+use RobRichards\XMLSecLibs;
+use RobRichards\XMLSecLibs\XMLSecurityDSig;
+use RobRichards\XMLSecLibs\XMLSecurityKey;
+
 /**
  * Soap security header
  */
@@ -23,7 +29,7 @@ class WSSESoap {
 	public $signAllHeaders = FALSE;
 	protected static $aErrors = array(
 		WSSESoap::ERR_NO_SIGNATURE => 'Nenalezen podpis v requestu',
-		WSSESoap::ERR_PARSE_CERTIFICATE => 'Nepodařilo se parsovat certifikát v cestě'
+		WSSESoap::ERR_PARSE_CERTIFICATE => 'Nepodařilo se parsovat certifikát'
 	);
 
 	function __construct($doc, $certificatePath, $bMustUnderstand = true) {
@@ -39,7 +45,7 @@ class WSSESoap {
 		$this->certificateInfo = openssl_x509_parse($certificatePath);
 
 		if ($this->certificateInfo === false) {
-			throw new SoapException('Nepodařilo se parsovat certifikát v cestě ' . $certificatePath . '.');
+			throw new SoapException(WSSESoap::errorString(WSSESoap::ERR_PARSE_CERTIFICATE), WSSESoap::ERR_PARSE_CERTIFICATE);
 		}
 		$this->certificatePath = $certificatePath;
 
@@ -140,20 +146,20 @@ class WSSESoap {
 			$x509SerialNumber = $objXMLSecDSig->createNewSignNode('X509SerialNumber', $this->certificateInfo['serialNumber']);
 			$x509IssuerSerial->appendChild($x509SerialNumber);
 		} else {
-			throw new Exception(WSSESoap::errorString(WSSESoap::ERR_NO_SIGNATURE), WSSESoap::ERR_NO_SIGNATURE);
+			throw new SoapException(WSSESoap::errorString(WSSESoap::ERR_NO_SIGNATURE), WSSESoap::ERR_NO_SIGNATURE);
 		}
 	}
 
 	/**
 	 * metoda podepsani celeho soap requestu ( reference i telo )
 	 */
-	public function signSoapDoc() {
+	public function signSoapDoc($certpass) {
 		/**
 		 * vytvoreni klice ze soukromeho certifikatu
 		 */
 		$objKey = new XMLSecurityKey(XMLSecurityKey::RSA_SHA1, array("type" => "private"));
-		$objKey->setPassPhrase(USER_CERT_PASSWORD);
-		$objKey->loadKey(USER_CERT_PATH, true);
+		$objKey->setPassPhrase($certpass);
+		$objKey->loadKey($this->certificatePath, true);
 
 		$objDSig = new XMLSecurityDSig();
 
